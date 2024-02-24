@@ -2,12 +2,10 @@
 import warnings
 import matplotlib.pyplot as plt
 import numpy as np
-import math
+import pandas as pd
 
 from random import seed
 from collections import Counter
-import torch
-from torch.nn import functional as f
 
 seed(42)
 np.random.seed(42)
@@ -95,7 +93,7 @@ class EM(object):
         z[k_indices] = 0
 
         return sum(np.log(z.sum(axis=0)) + m)
-    
+
     def plot_likelihood(self, log_likelihoods):
         # Plot log likelihoods
         plt.plot(range(1, len(log_likelihoods) + 1), log_likelihoods)
@@ -109,7 +107,7 @@ class EM(object):
         log_likelihoods = []
         perplexities = []
         last_log_likelihood = 0.0
-        for i in range(100):
+        for i in range(50):
             self.expectation()
             self.maximization()
 
@@ -119,16 +117,19 @@ class EM(object):
                 break
             print(log_likelihood)
             last_log_likelihood = log_likelihood
-            perplexity =  math.exp(-1 / self.data_size * log_likelihood)
+            perplexity = np.exp(-1 / self.data_size * log_likelihood)
             perplexities.append(perplexity)
         self.plot_likelihood(log_likelihoods)
-        
 
 
 if __name__ == '__main__':
     with open("develop.txt", "r") as f:
         raw_train_data = f.readlines()
+    with open("topics.txt", "r") as f:
+        topics = f.readlines()
 
+    topics = topics[::2]
+    topics = [i.strip() for i in topics]
     train_text_data = raw_train_data[2::4]
     train_topics = [i.strip(">\n").split()[2:] for i in raw_train_data[::4]]
 
@@ -136,8 +137,19 @@ if __name__ == '__main__':
 
     train_data, vocab_size = article_to_vectors(train_text_data)
 
-    em = EM(train_data, 9, vocab_size, k=100,gamma=0.01)
+    em = EM(train_data, 9, vocab_size, k=10, gamma=5)
 
     em.train()
 
-    x = 3
+    result = np.argmax(em.w, axis=0)
+
+    cm = pd.DataFrame(columns=topics, index=range(9))
+    for e, col in enumerate(cm.columns):
+        for j, ind in enumerate(cm.index):
+            cm[col][j] = ((result == j) & [col in t for t in train_topics]).sum()
+
+    print(f"General accuracy: {cm.values.max(axis=0).sum() / len(result)}")
+    print(f"Exact accuracy: {cm.values.max(axis=0).sum() / cm.values.sum()}")
+
+    cm.loc['Sum'] = cm.sum(axis=0)
+    cm.loc[:, 'Sum'] = cm.sum(axis=1)
