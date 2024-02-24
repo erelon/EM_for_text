@@ -1,7 +1,8 @@
 # Erel Shtossel 316297696
 import warnings
-
+import matplotlib.pyplot as plt
 import numpy as np
+import math
 
 from random import seed
 from collections import Counter
@@ -94,18 +95,34 @@ class EM(object):
         z[k_indices] = 0
 
         return sum(np.log(z.sum(axis=0)) + m)
+    
+    def plot_likelihood(self, log_likelihoods):
+        # Plot log likelihoods
+        plt.plot(range(1, len(log_likelihoods) + 1), log_likelihoods)
+        plt.xlabel("Iteration Number")
+        plt.ylabel("Log Likelihood")
+        plt.title("Log Likelihood vs Iteration Number")
+        plt.grid(True)
+        plt.show()
 
     def train(self):
-        last_v = 0.0
+        log_likelihoods = []
+        perplexities = []
+        last_log_likelihood = 0.0
         for i in range(100):
             self.expectation()
             self.maximization()
 
-            v = self.likelihood()
-            if v == last_v:
+            log_likelihood = self.likelihood()
+            log_likelihoods.append(log_likelihood)
+            if log_likelihood == last_log_likelihood:
                 break
-            print(v)
-            last_v = v
+            print(log_likelihood)
+            last_log_likelihood = log_likelihood
+            perplexity =  math.exp(-1 / self.data_size * log_likelihood)
+            perplexities.append(perplexity)
+        self.plot_likelihood(log_likelihoods)
+        
 
 
 if __name__ == '__main__':
