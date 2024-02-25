@@ -94,13 +94,23 @@ class EM(object):
 
         return sum(np.log(z.sum(axis=0)) + m)
 
-    def plot_likelihood(self, log_likelihoods):
-        # Plot log likelihoods
-        plt.plot(range(1, len(log_likelihoods) + 1), log_likelihoods)
-        plt.xlabel("Iteration Number")
-        plt.ylabel("Log Likelihood")
-        plt.title("Log Likelihood vs Iteration Number")
-        plt.grid(True)
+    def plot_likelihood(self, log_likelihoods, perplexities):
+        fig, ax1 = plt.subplots()
+
+        color = 'tab:red'
+        ax1.set_xlabel('Iteration')
+        ax1.set_ylabel('Log Likelihood', color=color)
+        ax1.plot(range(1, len(log_likelihoods) + 1), log_likelihoods, color=color)
+        ax1.tick_params(axis='y', labelcolor=color)
+
+        ax2 = ax1.twinx()
+        color = 'tab:blue'
+        ax2.set_ylabel('Perplexity', color=color)
+        ax2.plot(range(1, len(perplexities) + 1), perplexities, color=color)
+        ax2.tick_params(axis='y', labelcolor=color)
+
+        fig.tight_layout()
+        plt.title('Log Likelihood and Perplexity vs Iteration')
         plt.show()
 
     def train(self):
@@ -117,9 +127,9 @@ class EM(object):
                 break
             print(log_likelihood)
             last_log_likelihood = log_likelihood
-            perplexity = np.exp(-1 / self.data_size * log_likelihood)
+            perplexity = np.exp(-1 / np.sum(np.sum(self.data, axis=1)) * log_likelihood)
             perplexities.append(perplexity)
-        self.plot_likelihood(log_likelihoods)
+        self.plot_likelihood(log_likelihoods, perplexities)
 
 
 if __name__ == '__main__':
