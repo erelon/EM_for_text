@@ -127,7 +127,7 @@ class EM(object):
                 break
             print(log_likelihood)
             last_log_likelihood = log_likelihood
-            perplexity = np.exp(-1 / np.sum(np.sum(self.data, axis=1)) * log_likelihood)
+            perplexity = np.exp(-1 / vocab_size * log_likelihood)
             perplexities.append(perplexity)
         self.plot_likelihood(log_likelihoods, perplexities)
 
