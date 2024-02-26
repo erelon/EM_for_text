@@ -1,5 +1,5 @@
-# Erel Shtossel 316297696
-import warnings
+# Erel Shtossel 316297696 
+# Yuval Saadaty 205956634
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -114,6 +114,7 @@ class EM(object):
         plt.show()
 
     def train(self):
+        threshold = 0.9
         log_likelihoods = []
         perplexities = []
         last_log_likelihood = 0.0
@@ -122,10 +123,12 @@ class EM(object):
             self.maximization()
 
             log_likelihood = self.likelihood()
-            log_likelihoods.append(log_likelihood)
-            if log_likelihood == last_log_likelihood:
-                break
             print(log_likelihood)
+            log_likelihoods.append(log_likelihood)
+            if log_likelihood < last_log_likelihood:
+                print("Error - likelihood decrease")
+            if abs(log_likelihood - last_log_likelihood) < threshold:
+                break
             last_log_likelihood = log_likelihood
             perplexity = np.exp(-1 / vocab_size * log_likelihood)
             perplexities.append(perplexity)
@@ -163,3 +166,8 @@ if __name__ == '__main__':
 
     cm.loc['Sum'] = cm.sum(axis=0)
     cm.loc[:, 'Sum'] = cm.sum(axis=1)
+    
+    # Write confusion matrix to Excel file
+    cm.to_excel("Confusion matrix.xlsx", index=False, header=False)
+
+    x=4
