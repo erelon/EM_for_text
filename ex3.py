@@ -170,4 +170,3 @@ if __name__ == '__main__':
     # Write confusion matrix to Excel file
     cm.to_excel("Confusion matrix.xlsx", index=False, header=False)
 
-    x=4
