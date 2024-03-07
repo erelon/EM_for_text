@@ -117,7 +117,7 @@ class EM(object):
         threshold = 0.9
         log_likelihoods = []
         perplexities = []
-        last_log_likelihood = 0.0
+        last_log_likelihood = -float("inf")
         for i in range(50):
             self.expectation()
             self.maximization()
